@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en" data-build="chat-20261016-1148">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Team Chat — Loews Security</title>
+<meta name="theme-color" content="#1a365d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Team Chat">
+<style>
+:root{--gold:#d4af37;--navy:#1a365d;--blue:#2d4a7a;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#eef1f6;color:#222;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
+
+/* header */
+.chat-header{flex:0 0 auto;background:linear-gradient(135deg,#1a365d,#2d4a7a);color:#fff;padding:14px 16px;border-bottom:3px solid var(--gold);}
+.chat-header h1{font-size:20px;margin:0;}
+.chat-header p{font-size:13.5px;color:#b9c7d8;margin:4px 0 0;}
+#modebar{flex:0 0 auto;display:none;gap:8px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);}
+.modebtn{border:2px solid #1a365d;background:#fff;color:#1a365d;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14.5px;cursor:pointer;}
+.modebtn.on{background:#1a365d;color:#fff;}
+#clientHotel{flex:1;padding:7px 10px;border:2px solid var(--gold);border-radius:8px;font-size:14.5px;font-weight:600;color:#1a365d;}
+.power{font-family:Georgia,'Times New Roman',serif;font-weight:bold;color:#111;font-size:14.5px;text-align:center;background:#fff;padding:6px;border-bottom:2px solid var(--gold);}
+
+/* login card */
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a365d 0%,#2d4a7a 100%);z-index:9999;padding:16px;}
+.login-card{background:#fff;border-radius:16px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center;}
+.login-card h1{color:#1a365d;font-size:24.5px;margin:8px 0 4px;}
+.login-card .sub{color:#666;font-size:14.5px;margin-bottom:18px;}
+.login-card select{width:100%;padding:12px;margin:8px 0;border:2px solid #d4af37;border-radius:8px;font-size:18px;background:#fff;color:#222;}
+.login-card button{width:100%;padding:14px;margin-top:10px;background:#d4af37;color:#1a365d;border:none;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer;}
+.brand-power{font-family:Georgia,'Times New Roman',serif;font-weight:bold;color:#111;font-size:18px;margin-bottom:4px;}
+
+/* messages */
+#messages{flex:1 1 auto;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:8px;}
+.msg{background:#fff;border-radius:12px;padding:10px 12px;max-width:85%;box-shadow:0 1px 3px rgba(0,0,0,.08);align-self:flex-start;}
+.msg.mine{align-self:flex-end;background:#1a365d;color:#fff;}
+.msg .who{font-size:13.5px;font-weight:700;color:#1a365d;margin-bottom:2px;}
+.msg.mine .who{color:#d4af37;}
+.msg .txt{font-size:17px;line-height:1.4;word-wrap:break-word;}
+.msg .ts{font-size:12.5px;color:#999;margin-top:4px;}
+.msg.mine .ts{color:#b9c7d8;}
+.sys{text-align:center;font-size:13.5px;color:#888;margin:4px 0;}
+#status{text-align:center;font-size:12.5px;color:#999;padding:4px;flex:0 0 auto;}
+
+/* input bar */
+#bar{flex:0 0 auto;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #ddd;}
+#msgin{flex:1;padding:12px;border:2px solid #d4af37;border-radius:10px;font-size:18px;}
+#sendbtn{padding:12px 20px;background:#d4af37;color:#1a365d;border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;}
+#sendbtn:disabled{opacity:.5;cursor:default;}
+#attbtn{padding:12px 14px;background:#1a365d;color:#fff;border:none;border-radius:10px;font-size:19px;cursor:pointer;}
+#attbtn:disabled{opacity:.5;cursor:default;}
+#micbtn{padding:12px 14px;background:#1a365d;color:#fff;border:none;border-radius:10px;font-size:19px;cursor:pointer;}
+#micbtn.on{background:#e53e3e;animation:micpulse 1s ease-in-out infinite;}
+@keyframes micpulse{0%,100%{opacity:1}50%{opacity:.55}}
+#attchip{flex:0 0 auto;display:none;background:#fdf6e0;border-top:1px solid #eee;padding:8px 14px;font-size:14.5px;color:#444;align-items:center;justify-content:space-between;gap:8px;}
+#attchip button{border:none;background:none;font-size:17px;cursor:pointer;color:#b00;}
+.msg img.att{max-width:240px;max-height:240px;border-radius:8px;display:block;margin-top:5px;}
+.filelink{display:inline-block;margin-top:5px;padding:8px 10px;background:rgba(26,54,93,.08);border:1px solid #1a365d;border-radius:8px;color:#1a365d;font-size:14.5px;font-weight:600;text-decoration:none;word-break:break-all;}
+.msg.mine .filelink{background:rgba(255,255,255,.15);border-color:#d4af37;color:#fff;}
+#whoami{flex:0 0 auto;background:#fff;border-top:1px solid #eee;padding:6px 14px;font-size:13.5px;color:#666;display:flex;justify-content:space-between;align-items:center;}
+#whoami button{border:none;background:none;color:#1a365d;font-size:13.5px;font-weight:700;cursor:pointer;text-decoration:underline;}
+
+.dmrow{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #e6e9f0;border-radius:14px;padding:11px 13px;margin:0 0 9px;cursor:pointer;box-shadow:0 2px 8px rgba(26,54,93,.06);}
+.dmrow:active{transform:scale(.99);}
+.dmava{flex:0 0 auto;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#1a365d,#2d4a7a);color:#f6e27a;font-weight:800;font-size:16.5px;display:flex;align-items:center;justify-content:center;border:2px solid #d4af37;}
+.dmname{font-weight:800;color:#1a365d;font-size:16.5px;}
+.dmprev{color:#718096;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw;}
+.dmbadge{flex:0 0 auto;background:#e53e3e;color:#fff;border-radius:999px;min-width:23px;height:23px;line-height:23px;text-align:center;font-size:12.5px;font-weight:800;padding:0 6px;}
+.dmchev{color:#a0aec0;font-size:22px;font-weight:700;}
+</style>
+</head>
+<script>
+/* self-update guard: if the server has a newer build, reload once */
+(function(){var b=document.documentElement.getAttribute('data-build');if(!b)return;try{if(sessionStorage.getItem('chb')===b){sessionStorage.removeItem('chr');return;}if(sessionStorage.getItem('chr')===b)return;sessionStorage.setItem('chr',b);}catch(e){}
+fetch('https://jeremylevinatwork-dev.github.io/team-chat/index.html',{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/data-build="([^"]+)"/);if(m&&m[1]!==b){try{sessionStorage.setItem('chb',m[1]);}catch(e){}location.reload();}}).catch(function(){});})();
+</script>
+<body>
+
+<div class="power">Power by: NDL systems tech</div>
+<div class="chat-header">
+  <h1>💬 Team Chat</h1>
+  <p>Loews Security Systems — team messages</p>
+</div>
+
+<div id="login" style="display:none">
+  <div class="login-card">
+    <div class="brand-power">Power by: NDL systems tech</div>
+    <h1>Team Chat</h1>
+    <div class="sub">Please log in through the main Loews Security app first — the chat uses your team login.</div>
+  </div>
+</div>
+
+<div id="whoami" style="display:none">
+  <span id="whoami-name"></span>
+</div>
+
+<div id="modebar">
+  <button id="mode-team" class="modebtn on" onclick="switchMode('team')">Team Chat</button>
+  <button id="mode-client" class="modebtn" onclick="switchMode('client')">🏨 Client Chat</button>
+  <button id="mode-private" class="modebtn" onclick="switchMode('private')">🔒 Private <span id="dmTotalBadge" style="display:none;background:#e53e3e;color:#fff;border-radius:999px;padding:1px 7px;font-size:12px;font-weight:800"></span></button>
+  <button id="clientPrint" class="modebtn" style="display:none" onclick="printClientThread()">🧾 Print thread</button>
+  <select id="clientHotel" style="display:none" onchange="renderClientMsgs()">
+    <option value="PBH">Loews Portofino Bay Hotel</option>
+    <option value="HRH">Hard Rock Hotel</option>
+    <option value="RPR">Loews Royal Pacific Resort</option>
+    <option value="SFR">Loews Sapphire Falls Resort</option>
+    <option value="AVA">Universal Aventura Hotel</option>
+    <option value="CBBR">Universal Cabana Bay Beach Resort</option>
+    <option value="ESS">Universal's Endless Summer Resort - Surfside</option>
+    <option value="ESD">Universal's Endless Summer Resort - Dockside</option>
+    <option value="SNR">Universal Stella Nova Resort</option>
+    <option value="TLR">Universal Terra Luna Resort</option>
+    <option value="HGH">Universal Helios Grand Hotel</option>
+  </select>
+</div>
+
+<div id="messages"></div>
+<div id="status"></div>
+
+<div id="attchip"><span id="attname"></span><button onclick="clearAttach()" title="Remove attachment">&#10005;</button></div>
+<div id="bar">
+  <button id="attbtn" onclick="document.getElementById('filein').click()" title="Attach a photo or file">&#128206;</button>
+  <button id="micbtn" onclick="toggleMic()" title="Talk to type">🎤</button>
+  <button id="callbtn" onclick="startCall()" title="Video call" style="display:none;background:#2f855a;border-color:#276749;font-size:19px;">📹</button>
+  <input id="filein" type="file" style="display:none" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv">
+  <input id="msgin" type="text" placeholder="Type a message…" maxlength="1000" autocomplete="off">
+  <button id="sendbtn" onclick="sendMsg()">Send</button>
+</div>
+
+<script>
+"use strict";
+/* ---------- config ---------- */
+var TEAM = ["Jeremy Levin","Alexander Duff","Dominique Black","Sean Forester","Justin Messenger"];
+var SB_URL = 'https://qxqrwusaynfqadjfqswe.supabase.co';
+var SB_KEY = 'sb_publishable_2ba9yzEA89uqXHJ6v-_cQg_AmwwEfFF';
+var ROW_ID = 'team-chat';
+var MAX_MSG = 100000;
+var POLL_MS = 5000;
+
+var me = null;
+var messages = [];
+var pollTimer = null;
+var sending = false;
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function fmtTs(ts){
+  try{
+    var d = new Date(ts);
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  }catch(e){ return ''; }
+}
+function setStatus(t){ document.getElementById('status').textContent = t || ''; }
+
+/* ---------- SSO / identity ---------- */
+function getSSO(){
+  try{
+    if(localStorage.getItem('loewsAuth')==='1'){
+      var u = localStorage.getItem('loewsUser');
+      if(u && TEAM.indexOf(u) >= 0) return u;
+    }
+  }catch(e){}
+  return null;
+}
+function initIdentity(){
+  var sso = getSSO();
+  if(sso){ startChat(sso); return; }
+  // Login required — identity comes only from the main app's team login (loewsAuth)
+  document.getElementById('login').style.display = 'flex';
+}
+function logout(){
+  me = null;
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  document.getElementById('whoami').style.display = 'none';
+  document.getElementById('modebar').style.display = 'none';
+  document.getElementById('login').style.display = 'flex';
+}
+function startChat(name){
+  me = name;
+  document.getElementById('whoami-name').textContent = 'Chatting as: ' + name;
+  document.getElementById('whoami').style.display = 'flex';
+  document.getElementById('modebar').style.display = 'flex';
+  loadMsgs();
+  loadDms(true);
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(function(){ if(chatMode === 'client'){ loadClientMsgs(); loadDms(true); } else if(chatMode === 'private'){ loadDms(); } else { loadMsgs(); loadDms(true); } }, POLL_MS);
+}
+
+/* ---------- Supabase ---------- */
+function sbHeaders(json){
+  var h = {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY};
+  if(json) h['Content-Type'] = 'application/json';
+  return h;
+}
+async function loadMsgs(){
+  setStatus('Loading…');
+  try{
+    var res = await fetch(SB_URL + '/rest/v1/app_records?id=eq.' + encodeURIComponent(ROW_ID) + '&select=data', {headers: sbHeaders(false)});
+    if(!res.ok){ setStatus('Could not load messages'); return; }
+    var rows = await res.json();
+    var arr = [];
+    if(rows && rows.length && rows[0].data && Array.isArray(rows[0].data.messages)) arr = rows[0].data.messages;
+    messages = arr.slice(-MAX_MSG);
+    renderMsgs();
+    setStatus('');
+  }catch(e){
+    setStatus('Offline — will retry');
+  }
+}
+async function saveMsgs(){
+  try{
+    var payload = {id: ROW_ID, app: 'team-chat', data: {messages: messages.slice(-MAX_MSG)}, updated_at: new Date().toISOString()};
+    await fetch(SB_URL + '/rest/v1/app_records', {
+      method: 'POST',
+      headers: Object.assign(sbHeaders(true), {'Prefer': 'resolution=merge-duplicates'}),
+      body: JSON.stringify(payload)
+    });
+  }catch(e){ /* will retry on next poll/send */ }
+}
+
+/* ---------- client chat (separate from team chat) ---------- */
+var CLIENT_ROW = 'client-chat';
+var chatMode = 'team';
+var clientMessages = [];
+var CLIENT_KEEP_MS = 30 * 24 * 3600 * 1000; // client conversations are kept 30 days for review
+function pruneClient(list){
+  var cut = Date.now() - CLIENT_KEEP_MS;
+  return list.filter(function(m){ return !m.ts || new Date(m.ts).getTime() >= cut; });
+}
+function printClientThread(){
+  var sel = document.getElementById('clientHotel');
+  var hotelName = sel.selectedOptions[0].text;
+  var list = clientMessages.filter(function(m){ return m.hotel === sel.value; });
+  var rows = list.map(function(m){
+    return '<tr><td style="white-space:nowrap">' + esc(fmtTs(m.ts)) + '</td><td><b>' + esc(m.name) + (m.fromSupport ? ' (Support)' : '') + '</b></td><td>' + esc(m.text || '') + '</td></tr>';
+  }).join('');
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Client Chat — ' + esc(hotelName) + '</title><style>body{font-family:Arial,sans-serif;margin:40px;color:#222}h1{font-size:22.5px}h2{font-size:14.5px;color:#666;font-weight:normal}table{width:100%;border-collapse:collapse}td{padding:7px 9px;border-bottom:1px solid #ddd;font-size:14.5px;vertical-align:top}</style></head><body>'
+    + '<h1>Client Chat — ' + esc(hotelName) + '</h1><h2>Support conversation transcript · last 30 days · printed ' + new Date().toLocaleString() + '</h2>'
+    + (list.length ? '<table>' + rows + '</table>' : '<p>No messages in the last 30 days.</p>')
+    + '<script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script></body></html>';
+  var w = window.open('', '_blank');
+  if(w){ w.document.write(html); w.document.close(); }
+  else { alert('Please allow popups to print the thread.'); }
+}
+function switchMode(m){
+  chatMode = m;
+  document.getElementById('mode-team').classList.toggle('on', m === 'team');
+  document.getElementById('mode-client').classList.toggle('on', m === 'client');
+  document.getElementById('mode-private').classList.toggle('on', m === 'private');
+  document.getElementById('clientHotel').style.display = (m === 'client') ? '' : 'none';
+  document.getElementById('clientPrint').style.display = (m === 'client') ? '' : 'none';
+  document.getElementById('attbtn').style.display = (m === 'team' || m === 'private') ? '' : 'none';
+  if(m === 'client') clearAttach();
+  document.getElementById('msgin').placeholder = (m === 'client') ? 'Reply to the hotel…' : (m === 'private') ? (dmPeer ? 'Message ' + dmPeer.split(' ')[0] + '…' : 'Pick a person to message…') : 'Type a message…';
+  document.getElementById('messages').dataset.init = '';
+  if(m === 'client') loadClientMsgs(); else if(m === 'private') loadDms(); else loadMsgs();
+}
+async function loadClientMsgs(){
+  try{
+    var res = await fetch(SB_URL + '/rest/v1/app_records?id=eq.' + encodeURIComponent(CLIENT_ROW) + '&select=data', {headers: sbHeaders(false)});
+    if(!res.ok) return;
+    var rows = await res.json();
+    var arr = [];
+    if(rows && rows.length && rows[0].data && Array.isArray(rows[0].data.messages)) arr = rows[0].data.messages;
+    clientMessages = arr.slice(-MAX_MSG);
+    var pruned = pruneClient(clientMessages); // 30-day retention
+    if(pruned.length !== clientMessages.length){ clientMessages = pruned; saveClientMsgs(); }
+    if(chatMode === 'client') renderClientMsgs();
+  }catch(e){ setStatus('Offline — will retry'); }
+}
+async function saveClientMsgs(){
+  try{
+    var payload = {id: CLIENT_ROW, app: 'client-chat', data: {messages: clientMessages.slice(-MAX_MSG)}, updated_at: new Date().toISOString()};
+    await fetch(SB_URL + '/rest/v1/app_records', {
+      method: 'POST',
+      headers: Object.assign(sbHeaders(true), {'Prefer': 'resolution=merge-duplicates'}),
+      body: JSON.stringify(payload)
+    });
+  }catch(e){ /* will retry on next poll/send */ }
+}
+function renderClientMsgs(){
+  var box = document.getElementById('messages');
+  var hotel = document.getElementById('clientHotel').value;
+  var list = clientMessages.filter(function(m){ return m.hotel === hotel; });
+  var nearBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 120;
+  var start = Math.max(0, list.length - 300);
+  var h = '';
+  for(var i = start; i < list.length; i++){
+    var m = list[i];
+    var mine = (m.fromSupport === true);
+    h += '<div class="msg' + (mine ? ' mine' : '') + '">'
+      + '<div class="who">' + esc(m.name) + (m.fromSupport ? ' · Support' : '') + '</div>'
+      + (m.text ? '<div class="txt">' + esc(m.text) + '</div>' : '')
+      + '<div class="ts">' + esc(fmtTs(m.ts)) + '</div>'
+      + '</div>';
+  }
+  if(!list.length) h = '<div class="sys">No client messages from this hotel yet.</div>';
+  box.innerHTML = h;
+  if(nearBottom || !box.dataset.init){ box.scrollTop = box.scrollHeight; box.dataset.init = '1'; }
+}
+
+/* ---------- private (1-on-1) conversations ---------- */
+var DM_ROW = 'team-dms';
+var dms = [];
+var dmPeer = null;
+function dmThread(person){ return dms.filter(function(m){ return (m.from === me && m.to === person) || (m.from === person && m.to === me); }); }
+function dmReadMap(){ try{ return JSON.parse(localStorage.getItem('dmRead') || '{}'); }catch(e){ return {}; } }
+function dmUnread(person){ var rd = dmReadMap()[person] || ''; var n = 0; dms.forEach(function(m){ if(m.from === person && m.to === me && m.ts > rd) n++; }); return n; }
+function dmTotalUnread(){ var n = 0; TEAM.forEach(function(p){ if(p !== me) n += dmUnread(p); }); return n; }
+function updateDmBadge(){ var b = document.getElementById('dmTotalBadge'); if(!b) return; var n = dmTotalUnread(); b.textContent = n ? String(n) : ''; b.style.display = n ? '' : 'none'; }
+function setDmRead(person, ts){ var mp = dmReadMap(); mp[person] = ts; try{ localStorage.setItem('dmRead', JSON.stringify(mp)); }catch(e){} updateDmBadge(); }
+function markDmRead(person){ var th = dmThread(person); setDmRead(person, th.length ? th[th.length - 1].ts : new Date().toISOString()); }
+async function loadDms(quiet){
+  try{
+    var res = await fetch(SB_URL + '/rest/v1/app_records?id=eq.' + encodeURIComponent(DM_ROW) + '&select=data', {headers: sbHeaders(false)});
+    if(!res.ok) return;
+    var rows = await res.json();
+    var arr = [];
+    if(rows && rows.length && rows[0].data && Array.isArray(rows[0].data.messages)) arr = rows[0].data.messages;
+    dms = arr.slice(-MAX_MSG);
+    updateDmBadge();
+    if(chatMode === 'private' && !quiet) renderDmView();
+  }catch(e){ if(!quiet) setStatus('Offline — will retry'); }
+}
+async function saveDms(){
+  try{
+    var payload = {id: DM_ROW, app: 'team-dms', data: {messages: dms.slice(-MAX_MSG)}, updated_at: new Date().toISOString()};
+    await fetch(SB_URL + '/rest/v1/app_records', {
+      method: 'POST',
+      headers: Object.assign(sbHeaders(true), {'Prefer': 'resolution=merge-duplicates'}),
+      body: JSON.stringify(payload)
+    });
+  }catch(e){ /* will retry on next poll/send */ }
+}
+function initialsOf(name){ return name.split(/\s+/).map(function(w){ return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+function renderDmView(){
+  var box = document.getElementById('messages');
+  if(!dmPeer){
+    var h = '<div class="sys" style="margin-bottom:8px">🔒 Private conversations — tap a person. Only the two of you see these messages.</div>';
+    TEAM.forEach(function(p){
+      if(p === me) return;
+      var th = dmThread(p);
+      var last = th[th.length - 1];
+      var un = dmUnread(p);
+      h += '<div class="dmrow" onclick="dmOpen(\'' + p + '\')">'
+        + '<div class="dmava">' + esc(initialsOf(p)) + '</div>'
+        + '<div style="flex:1;min-width:0"><div class="dmname">' + esc(p) + '</div>'
+        + '<div class="dmprev">' + (last ? esc((last.from === me ? 'You: ' : '') + (last.text || '📎 File')) : 'No messages yet — say hi') + '</div></div>'
+        + (un ? '<span class="dmbadge">' + un + '</span>' : '')
+        + '<div class="dmchev">›</div></div>';
+    });
+    box.innerHTML = h;
+    syncCallBtn();
+    return;
+  }
+  var list = dmThread(dmPeer);
+  var nearBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 120;
+  var h = '<div style="margin-bottom:9px"><button class="modebtn" onclick="dmBack()">← All people</button> <b style="color:#1a365d;font-size:16.5px">🔒 ' + esc(dmPeer) + '</b> <button class="modebtn" style="float:right;background:#2f855a;color:#fff;border-color:#2f855a" onclick="startCall()">📹 Call</button></div>';
+  var start = Math.max(0, list.length - 300);
+  for(var i = start; i < list.length; i++){
+    var m = list[i];
+    var mine = (m.from === me);
+    h += '<div class="msg' + (mine ? ' mine' : '') + '">'
+      + '<div class="who">' + esc(m.from) + '</div>'
+      + (m.text ? '<div class="txt">' + esc(m.text) + '</div>' : '')
+      + dmFileHtml(m)
+      + '<div class="ts">' + esc(fmtTs(m.ts)) + '</div>'
+      + '</div>';
+  }
+  if(!list.length) h += '<div class="sys">No messages yet — say hi 👋</div>';
+  box.innerHTML = h;
+  if(nearBottom || !box.dataset.init){ box.scrollTop = box.scrollHeight; box.dataset.init = '1'; }
+  markDmRead(dmPeer);
+  syncCallBtn();
+}
+function dmFileHtml(m){
+  if(!m.file || !m.file.url) return '';
+  if((m.file.type||'').indexOf('image/') === 0){
+    return '<a href="' + esc(m.file.url) + '" target="_blank" rel="noopener"><img class="att" src="' + esc(m.file.url) + '" alt="' + esc(m.file.name || 'photo') + '"></a>';
+  }
+  return '<a class="filelink" href="' + esc(m.file.url) + '" target="_blank" rel="noopener" download>&#128196; ' + esc(m.file.name || 'File') + (m.file.size ? ' (' + fmtSize(m.file.size) + ')' : '') + '</a>';
+}
+function dmOpen(p){
+  dmPeer = p;
+  document.getElementById('messages').dataset.init = '';
+  document.getElementById('msgin').placeholder = 'Message ' + p.split(' ')[0] + '…';
+  renderDmView();
+  document.getElementById('msgin').focus();
+}
+function dmBack(){
+  dmPeer = null;
+  document.getElementById('messages').dataset.init = '';
+  document.getElementById('msgin').placeholder = 'Pick a person to message…';
+  renderDmView();
+}
+
+/* ---------- render / send ---------- */
+function syncCallBtn(){ var b = document.getElementById('callbtn'); if(b) b.style.display = (chatMode === 'private' && dmPeer) ? '' : 'none'; }
+function renderMsgs(){
+  syncCallBtn();
+  var box = document.getElementById('messages');
+  var nearBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 120;
+  var SHOW = 300; // display latest 300; full log (up to 100,000) stays saved
+  var start = Math.max(0, messages.length - SHOW);
+  var h = '';
+  if(start > 0) h += '<div class="sys">Showing latest 300 of ' + messages.length + ' messages — full history is saved.</div>';
+  for(var i=start;i<messages.length;i++){
+    var m = messages[i];
+    var mine = (m.name === me);
+    var fileHtml = '';
+    if(m.file && m.file.url){
+      if((m.file.type||'').indexOf('image/') === 0){
+        fileHtml = '<a href="'+esc(m.file.url)+'" target="_blank" rel="noopener"><img class="att" src="'+esc(m.file.url)+'" alt="'+esc(m.file.name||'photo')+'"></a>';
+      } else {
+        fileHtml = '<a class="filelink" href="'+esc(m.file.url)+'" target="_blank" rel="noopener" download>&#128196; '+esc(m.file.name||'File')+(m.file.size?' ('+fmtSize(m.file.size)+')':'')+'</a>';
+      }
+    }
+    h += '<div class="msg'+(mine?' mine':'')+'">'
+      + '<div class="who">'+esc(m.name)+'</div>'
+      + (m.text ? '<div class="txt">'+esc(m.text)+'</div>' : '')
+      + fileHtml
+      + '<div class="ts">'+esc(fmtTs(m.ts))+'</div>'
+      + '</div>';
+  }
+  if(!messages.length) h = '<div class="sys">No messages yet — say hi 👋</div>';
+  box.innerHTML = h;
+  if(nearBottom || !box.dataset.init){ box.scrollTop = box.scrollHeight; box.dataset.init = '1'; }
+}
+var pendingFile = null;
+var MAX_FILE = 10 * 1024 * 1024; // 10 MB
+function fmtSize(n){ if(!n && n!==0) return ''; if(n < 1024) return n + ' B'; if(n < 1048576) return Math.round(n/1024) + ' KB'; return (n/1048576).toFixed(1) + ' MB'; }
+function clearAttach(){
+  pendingFile = null;
+  var fi = document.getElementById('filein'); if(fi) fi.value = '';
+  var chip = document.getElementById('attchip'); if(chip) chip.style.display = 'none';
+}
+async function uploadFile(file){
+  var safe = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+  var path = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safe;
+  var res = await fetch(SB_URL + '/storage/v1/object/chat-files/' + encodeURIComponent(path), {
+    method: 'POST',
+    headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'false'},
+    body: file
+  });
+  if(!res.ok) throw new Error('upload failed');
+  return { name: file.name || 'file', url: SB_URL + '/storage/v1/object/public/chat-files/' + path, type: file.type || '', size: file.size || 0 };
+}
+async function sendMsg(){
+  var inp = document.getElementById('msgin');
+  var t = inp.value.trim();
+  if((!t && !pendingFile) || !me || sending) return;
+  if(chatMode === 'client'){
+    if(!t) return;
+    sending = true;
+    document.getElementById('sendbtn').disabled = true;
+    try{
+      setStatus('Sending…');
+      await loadClientMsgs();
+      clientMessages.push({name: me, text: t, ts: new Date().toISOString(), hotel: document.getElementById('clientHotel').value, fromSupport: true});
+      await saveClientMsgs();
+      inp.value = '';
+      renderClientMsgs();
+      setStatus('');
+    }catch(e){ setStatus('Could not send — will retry'); }
+    sending = false;
+    document.getElementById('sendbtn').disabled = false;
+    return;
+  }
+  if(chatMode === 'private'){
+    if(!dmPeer){ setStatus('Pick a person first'); return; }
+    sending = true;
+    document.getElementById('sendbtn').disabled = true;
+    document.getElementById('attbtn').disabled = true;
+    try{
+      var dmFile = null;
+      if(pendingFile){
+        setStatus('Uploading file…');
+        dmFile = await uploadFile(pendingFile);
+      }
+      setStatus('Sending…');
+      await loadDms(true);
+      var dmMsg = {from: me, to: dmPeer, text: t, ts: new Date().toISOString()};
+      if(dmFile) dmMsg.file = dmFile;
+      dms.push(dmMsg);
+      dms = dms.slice(-MAX_MSG);
+      renderDmView();
+      inp.value = '';
+      clearAttach();
+      await saveDms();
+      setStatus('');
+    }catch(e){ setStatus('Could not send — will retry'); }
+    sending = false;
+    document.getElementById('sendbtn').disabled = false;
+    document.getElementById('attbtn').disabled = false;
+    inp.focus();
+    return;
+  }
+  sending = true;
+  document.getElementById('sendbtn').disabled = true;
+  document.getElementById('attbtn').disabled = true;
+  try{
+    var fileInfo = null;
+    if(pendingFile){
+      setStatus('Uploading file…');
+      fileInfo = await uploadFile(pendingFile);
+    }
+    setStatus('Sending…');
+    // refresh first to avoid clobbering teammates' messages
+    await loadMsgs();
+    var msg = {name: me, text: t, ts: new Date().toISOString()};
+    if(fileInfo) msg.file = fileInfo;
+    messages.push(msg);
+    messages = messages.slice(-MAX_MSG);
+    renderMsgs();
+    inp.value = '';
+    clearAttach();
+    await saveMsgs();
+    setStatus('');
+  }catch(e){
+    setStatus('Send failed — try again');
+  }
+  sending = false;
+  document.getElementById('sendbtn').disabled = false;
+  document.getElementById('attbtn').disabled = false;
+  inp.focus();
+}
+
+document.getElementById('msgin').addEventListener('keypress', function(e){ if(e.key==='Enter') sendMsg(); });
+document.getElementById('filein').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  if(f.size > MAX_FILE){
+    setStatus('That file is too big — 10 MB max');
+    clearAttach();
+    return;
+  }
+  pendingFile = f;
+  document.getElementById('attname').textContent = '📎 ' + f.name + ' (' + fmtSize(f.size) + ') — tap Send';
+  document.getElementById('attchip').style.display = 'flex';
+  setStatus('');
+});
+/* ---------- talk to type (voice dictation) ---------- */
+var recog = null, micOn = false;
+function toggleMic(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ setStatus('Voice typing is not supported in this browser — it works in Safari, Chrome, and Edge'); return; }
+  if(micOn){ try{ recog.stop(); }catch(e){} return; }
+  var inp = document.getElementById('msgin');
+  recog = new SR();
+  recog.lang = 'en-US';
+  recog.interimResults = true;
+  recog.continuous = false;
+  var base = inp.value ? inp.value.replace(/\s+$/, '') + ' ' : '';
+  recog.onresult = function(ev){
+    var interim = '', fin = '';
+    for(var i = ev.resultIndex; i < ev.results.length; i++){
+      if(ev.results[i].isFinal) fin += ev.results[i][0].transcript;
+      else interim += ev.results[i][0].transcript;
+    }
+    inp.value = base + fin + interim;
+    if(fin) base = inp.value.replace(/\s+$/, '') + ' ';
+  };
+  recog.onend = function(){ micOn = false; var mb = document.getElementById('micbtn'); if(mb) mb.classList.remove('on'); var st = document.getElementById('status'); if(st && st.textContent.indexOf('Listening') >= 0) setStatus(''); };
+  recog.onerror = function(ev){
+    if(ev.error === 'not-allowed' || ev.error === 'service-not-allowed') setStatus('Microphone is blocked — allow microphone access for this app, then try again');
+    else if(ev.error === 'no-speech') setStatus('Did not catch that — tap 🎤 and speak again');
+    else if(ev.error !== 'aborted') setStatus('Voice typing hit a problem — try again');
+  };
+  try{
+    recog.start();
+    micOn = true;
+    document.getElementById('micbtn').classList.add('on');
+    setStatus('🎤 Listening… speak now, then tap Send');
+  }catch(e){ setStatus('Voice typing could not start'); }
+}
+/* ---------- video calls (private chat, WebRTC + Supabase signaling) ---------- */
+var CALL_ROW = 'team-calls';
+var calls = [];
+var pc = null, localStream = null, activeCall = null, callRole = null; // role: 'out' | 'in'
+var appliedIce = 0, ringTimer = null, callTickTimer = null, ringBeepTimer = null, callStartedAt = 0;
+var pendingIce = [], iceFlushTimer = null;
+function flushIce(){
+  iceFlushTimer = null;
+  if(!activeCall || !pendingIce.length) return;
+  var batch = pendingIce.slice(); pendingIce = [];
+  var side = (callRole === 'out') ? 'iceFrom' : 'iceTo';
+  var cid = activeCall.id;
+  updateCall(cid, function(c){ c[side] = (c[side] || []).concat(batch); });
+}
+var callAudioCtx = null;
+function callSupported(){ return !!(window.RTCPeerConnection && navigator.mediaDevices && navigator.mediaDevices.getUserMedia); }
+async function loadCalls(quiet){
+  try{
+    var res = await fetch(SB_URL + '/rest/v1/app_records?id=eq.' + CALL_ROW + '&select=data', {headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY}});
+    if(!res.ok) return;
+    var rows = await res.json();
+    calls = (rows.length && rows[0].data && rows[0].data.calls) || [];
+  }catch(e){}
+}
+async function saveCalls(){
+  try{
+    var cutoff = Date.now() - 5 * 60 * 1000;
+    calls = calls.filter(function(c){ return c.status !== 'ended' || (c.ts && (new Date(c.ts).getTime() > cutoff)); }).slice(-10);
+    var payload = {id: CALL_ROW, app: 'team-calls', data: {calls: calls}, updated_at: new Date().toISOString()};
+    await fetch(SB_URL + '/rest/v1/app_records?on_conflict=id', {method: 'POST', headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'}, body: JSON.stringify(payload)});
+  }catch(e){}
+}
+async function updateCall(id, fn){
+  await loadCalls();
+  var c = null;
+  for(var i = 0; i < calls.length; i++){ if(calls[i].id === id){ c = calls[i]; break; } }
+  if(c) fn(c); else { c = {id: id}; fn(c); calls.push(c); }
+  await saveCalls();
+  return c;
+}
+function callOverlayShow(show){
+  document.getElementById('callOverlay').style.display = show ? 'flex' : 'none';
+}
+function callUi(state, name, status){
+  document.getElementById('callName').textContent = name || '';
+  document.getElementById('callStatus').textContent = status || '';
+  document.getElementById('btnAnswer').style.display = (state === 'incoming') ? '' : 'none';
+  document.getElementById('btnDecline').style.display = (state === 'incoming') ? '' : 'none';
+  var inCall = (state === 'calling' || state === 'live');
+  document.getElementById('btnEnd').style.display = inCall ? '' : 'none';
+  document.getElementById('btnMute').style.display = inCall ? '' : 'none';
+  document.getElementById('btnCam').style.display = inCall ? '' : 'none';
+}
+function ringBeep(){
+  try{
+    if(!callAudioCtx) callAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var t = callAudioCtx.currentTime;
+    [880, 1174].forEach(function(f, i){
+      var o = callAudioCtx.createOscillator(), g = callAudioCtx.createGain();
+      o.frequency.value = f; o.type = 'sine';
+      g.gain.setValueAtTime(0.0001, t + i * 0.18);
+      g.gain.exponentialRampToValueAtTime(0.22, t + i * 0.18 + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.18 + 0.16);
+      o.connect(g); g.connect(callAudioCtx.destination);
+      o.start(t + i * 0.18); o.stop(t + i * 0.18 + 0.2);
+    });
+  }catch(e){}
+}
+function stopRing(){ if(ringBeepTimer){ clearInterval(ringBeepTimer); ringBeepTimer = null; } }
+function newPc(){
+  var conn = new RTCPeerConnection({iceServers: [{urls: 'stun:stun.l.google.com:19302'}, {urls: 'stun:stun1.l.google.com:19302'}]});
+  conn.ontrack = function(ev){
+    var rv = document.getElementById('callRemote');
+    if(ev.streams && ev.streams[0]) rv.srcObject = ev.streams[0];
+  };
+  conn.onicecandidate = function(ev){
+    if(!ev.candidate || !activeCall) return;
+    var cand = ev.candidate.toJSON ? ev.candidate.toJSON() : ev.candidate;
+    pendingIce.push(cand);
+    if(!iceFlushTimer){
+      iceFlushTimer = setTimeout(flushIce, 1200);
+    }
+  };
+  conn.onconnectionstatechange = function(){
+    if(!activeCall) return;
+    if(conn.connectionState === 'connected'){
+      document.getElementById('callStatus').textContent = 'Connected';
+      if(ringTimer){ clearTimeout(ringTimer); ringTimer = null; }
+    }
+    if(conn.connectionState === 'failed'){ document.getElementById('callStatus').textContent = 'Connection failed — try again'; }
+  };
+  return conn;
+}
+async function attachLocal(){
+  localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+  document.getElementById('callLocal').srcObject = localStream;
+  localStream.getTracks().forEach(function(tr){ pc.addTrack(tr, localStream); });
+}
+async function startCall(){
+  if(!dmPeer){ setStatus('Pick a person first'); return; }
+  if(activeCall) return;
+  if(!callSupported()){ setStatus('Video calls are not supported in this browser'); return; }
+  callOverlayShow(true);
+  callUi('calling', dmPeer, 'Starting camera…');
+  try{
+    pc = newPc();
+    await attachLocal();
+    var offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    var id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    activeCall = {id: id, from: me, to: dmPeer};
+    callRole = 'out';
+    appliedIce = 0;
+    callStartedAt = Date.now();
+    await updateCall(id, function(c){
+      c.from = me; c.to = dmPeer; c.status = 'ringing';
+      c.offer = {type: offer.type, sdp: offer.sdp};
+      c.answer = null; c.iceFrom = []; c.iceTo = []; c.ts = new Date().toISOString();
+    });
+    callUi('calling', dmPeer, 'Calling…');
+    ringTimer = setTimeout(function(){ if(activeCall && activeCall.id === id && (!pc || pc.connectionState !== 'connected')){ setStatus('No answer'); endCall(true); } }, 45000);
+  }catch(e){
+    callUi('idle', '', '');
+    callOverlayShow(false);
+    setStatus('Camera/mic blocked — allow camera and microphone for this app, then try again');
+    teardownCall();
+  }
+}
+async function answerCall(){
+  if(!activeCall) return;
+  stopRing();
+  callUi('calling', activeCall.from, 'Starting camera…');
+  try{
+    pc = newPc();
+    callRole = 'in';
+    appliedIce = 0;
+    await pc.setRemoteDescription(new RTCSessionDescription(activeCall.offer));
+    await attachLocal();
+    var ans = await pc.createAnswer();
+    await pc.setLocalDescription(ans);
+    var cid = activeCall.id;
+    await updateCall(cid, function(c){ c.answer = {type: ans.type, sdp: ans.sdp}; c.status = 'live'; });
+    callUi('live', activeCall.from, 'Connecting…');
+  }catch(e){
+    setStatus('Could not start the call — camera/mic may be blocked');
+    endCall(true);
+  }
+}
+function declineCall(){
+  if(!activeCall) return;
+  var cid = activeCall.id;
+  stopRing();
+  updateCall(cid, function(c){ c.status = 'ended'; });
+  teardownCall();
+  callOverlayShow(false); callUi('idle', '', '');
+}
+async function endCall(writeIt){
+  stopRing();
+  if(ringTimer){ clearTimeout(ringTimer); ringTimer = null; }
+  if(activeCall && writeIt){
+    var cid = activeCall.id;
+    try{ await updateCall(cid, function(c){ c.status = 'ended'; }); }catch(e){}
+  }
+  teardownCall();
+  callOverlayShow(false); callUi('idle', '', '');
+}
+function teardownCall(){
+  try{ if(localStream) localStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){}
+  try{ if(pc) pc.close(); }catch(e){}
+  localStream = null; pc = null; activeCall = null; callRole = null; appliedIce = 0; pendingIce = []; if(iceFlushTimer){ clearTimeout(iceFlushTimer); iceFlushTimer = null; }
+  var lv = document.getElementById('callLocal'); if(lv) lv.srcObject = null;
+  var rv = document.getElementById('callRemote'); if(rv) rv.srcObject = null;
+  document.getElementById('btnMute').textContent = '🎙️ Mute';
+  document.getElementById('btnCam').textContent = '📷 Camera';
+}
+function toggleMute(){
+  if(!localStream) return;
+  var tr = localStream.getAudioTracks()[0]; if(!tr) return;
+  tr.enabled = !tr.enabled;
+  document.getElementById('btnMute').textContent = tr.enabled ? '🎙️ Mute' : '🔇 Unmute';
+}
+function toggleCam(){
+  if(!localStream) return;
+  var tr = localStream.getVideoTracks()[0]; if(!tr) return;
+  tr.enabled = !tr.enabled;
+  document.getElementById('btnCam').textContent = tr.enabled ? '📷 Camera' : '📷 Show camera';
+}
+async function callPollTick(){
+  if(!me) return;
+  await loadCalls();
+  // incoming?
+  if(!activeCall){
+    var inc = null;
+    for(var i = calls.length - 1; i >= 0; i--){
+      var c = calls[i];
+      if(c.to === me && c.status === 'ringing' && (Date.now() - new Date(c.ts).getTime() < 60000)){ inc = c; break; }
+    }
+    if(inc){
+      activeCall = {id: inc.id, from: inc.from, to: inc.to, offer: inc.offer};
+      callRole = 'in';
+      callOverlayShow(true);
+      callUi('incoming', inc.from, 'Incoming video call…');
+      ringBeep(); stopRing(); ringBeepTimer = setInterval(ringBeep, 2200);
+    }
+    return;
+  }
+  // active call updates
+  var mine = null;
+  for(var j = 0; j < calls.length; j++){ if(calls[j].id === activeCall.id){ mine = calls[j]; break; } }
+  if(!mine) return;
+  if(mine.status === 'ended'){
+    var wasIncoming = (callRole === 'in' && !pc);
+    stopRing();
+    teardownCall();
+    callOverlayShow(false); callUi('idle', '', '');
+    setStatus(wasIncoming ? 'Missed call' : 'Call ended');
+    return;
+  }
+  if(callRole === 'out' && mine.answer && pc && !pc.currentRemoteDescription){
+    try{ await pc.setRemoteDescription(new RTCSessionDescription(mine.answer)); }catch(e){}
+  }
+  if(pc){
+    var remote = (callRole === 'out') ? (mine.iceTo || []) : (mine.iceFrom || []);
+    while(appliedIce < remote.length){
+      try{ await pc.addIceCandidate(new RTCIceCandidate(remote[appliedIce])); }catch(e){}
+      appliedIce++;
+    }
+  }
+}
+setInterval(callPollTick, 2500);
+
+initIdentity();
+</script>
+<div id="callOverlay" style="display:none;position:fixed;inset:0;background:#0d1b2e;z-index:3000;flex-direction:column;">
+  <div style="flex:1;position:relative;overflow:hidden;">
+    <video id="callRemote" autoplay playsinline style="width:100%;height:100%;object-fit:cover;background:#000;"></video>
+    <video id="callLocal" autoplay playsinline muted style="position:absolute;top:14px;right:14px;width:110px;height:150px;object-fit:cover;border-radius:12px;border:2px solid #d4af37;background:#222;"></video>
+    <div style="position:absolute;top:14px;left:14px;color:#fff;">
+      <div id="callName" style="font-weight:800;font-size:20px;text-shadow:0 1px 4px rgba(0,0,0,.6);"></div>
+      <div id="callStatus" style="font-size:15px;color:#dbe4f0;text-shadow:0 1px 4px rgba(0,0,0,.6);"></div>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;display:flex;gap:10px;justify-content:center;padding:16px;background:rgba(13,27,46,.92);">
+    <button id="btnAnswer" onclick="answerCall()" style="display:none;padding:13px 22px;border:none;border-radius:999px;background:#2f855a;color:#fff;font-size:17px;font-weight:800;cursor:pointer;">✅ Answer</button>
+    <button id="btnDecline" onclick="declineCall()" style="display:none;padding:13px 22px;border:none;border-radius:999px;background:#e53e3e;color:#fff;font-size:17px;font-weight:800;cursor:pointer;">❌ Decline</button>
+    <button id="btnMute" onclick="toggleMute()" style="display:none;padding:13px 18px;border:none;border-radius:999px;background:#2d4a7a;color:#fff;font-size:17px;font-weight:700;cursor:pointer;">🎙️ Mute</button>
+    <button id="btnCam" onclick="toggleCam()" style="display:none;padding:13px 18px;border:none;border-radius:999px;background:#2d4a7a;color:#fff;font-size:17px;font-weight:700;cursor:pointer;">📷 Camera</button>
+    <button id="btnEnd" onclick="endCall(true)" style="display:none;padding:13px 22px;border:none;border-radius:999px;background:#e53e3e;color:#fff;font-size:17px;font-weight:800;cursor:pointer;">📞 End</button>
+  </div>
+</div>
+</body>
+</html>
